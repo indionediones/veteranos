@@ -1,0 +1,105 @@
+import pygame
+import random
+
+# Define the window size and the size of each block
+window_width = 600
+window_height = 700
+block_size = 30
+
+# Define the board size in terms of blocks
+board_width = 10
+board_height = 20
+
+# Define the colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+blue = (0, 0, 255)
+green = (0, 255, 0)
+red = (255, 0, 0)
+yellow = (255, 255, 0)
+purple = (128, 0, 128)
+
+# Define the shapes of the blocks
+shapes = [
+    [[1, 1],
+     [1, 1]],
+
+    [[1, 0, 0],
+     [1, 1, 1]],
+
+    [[0, 0, 1],
+     [1, 1, 1]],
+
+    [[1, 1, 0],
+     [0, 1, 1]],
+
+    [[0, 1, 1],
+     [1, 1, 0]],
+
+    [[1, 1, 1],
+     [0, 1, 0]],
+
+    [[1, 1, 1, 1]]
+]
+
+class Block:
+    def __init__(self, shape):
+        self.shape = shape
+        self.color = random.choice([blue, green, red, yellow, purple])
+        self.rotation = 0
+        self.x = (board_width // 2) - (len(shape[0]) // 2)
+        self.y = 0
+
+    def rotate(self):
+        self.rotation = (self.rotation + 1) % len(self.shape)
+
+    def move_left(self):
+        self.x -= 1
+
+    def move_right(self):
+        self.x += 1
+
+    def move_down(self):
+        self.y += 1
+
+class Board:
+    def __init__(self):
+        self.grid = [[0 for x in range(board_width)] for y in range(board_height)]
+
+    def is_valid_position(self, block):
+        for y, row in enumerate(block.shape[block.rotation]):
+            for x, val in enumerate(row):
+                if val and (block.y + y >= board_height or block.x + x < 0 or block.x + x >= board_width or self.grid[block.y + y][block.x + x]):
+                    return False
+        return True
+
+    def add_block(self, block):
+        for y, row in enumerate(block.shape[block.rotation]):
+            for x, val in enumerate(row):
+                if val:
+                    self.grid[block.y + y][block.x + x] = block.color
+
+        # Check if a line has been completed
+        for y in range(board_height):
+            if all(self.grid[y]):
+                self.grid.pop(y)
+                self.grid.insert(0, [0 for x in range(board_width)])
+
+class Game:
+    def __init__(self):
+        pygame.init()
+        pygame.display.set_caption("Tetris")
+        self.screen = pygame.display.set_mode((window_width, window_height))
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(None, 36)
+        self.board = Board()
+        self.block = Block(random.choice(shapes))
+        self.score = 0
+        self.game_over = False
+
+    def update(self):
+        self.block.move_down()
+
+        if not self.board.is_valid_position(self.block):
+            self.block.move_up()
+            self.board
